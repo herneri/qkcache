@@ -1,0 +1,119 @@
+/*
+	qkc_db.c: General cache database management.
+
+	Copyright (C) 2025  Eric Hernandez
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+ 	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#include "qkc_db.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+const int QKC_MAX_NAME_LEN = 255;
+
+const int QKC_DB_HEADER = 0x12905;
+const int QKC_DB_END = 0x12906;
+
+const int QKC_INDEX_START = 0x24012;
+const int QKC_INDEX_END = 0x24055;
+
+struct qkc_database *qkc_open_database(const char *database_name) {
+	struct qkc_database *opened_database = malloc(sizeof(struct qkc_database));
+	char index_name[QKC_MAX_NAME_LEN + 7];
+	int temp = 0;
+
+	strcpy(index_name, ".index_");
+	strcat(index_name, database_name);
+
+	if (opened_database == NULL) {
+		return NULL;
+	}
+
+	opened_database->name = (char *) database_name;
+	opened_database->database_data = fopen(database_name, "rwb");
+	opened_database->index_file = fopen(index_name, "rwb");
+
+	if (opened_database->database_data == NULL) {
+		free(opened_database);
+		return NULL;
+	}
+
+	fread(&temp, 1, sizeof(int), opened_database->database_data);
+	if (temp != QKC_DB_HEADER) {
+		fclose(opened_database->database_data);
+		free(opened_database);
+		return NULL;
+	}
+
+	fread(&temp, 1, sizeof(int), opened_database->index_file);
+	if (temp != QKC_INDEX_START) {
+		fclose(opened_database->index_file);
+		free(opened_database);
+		return NULL;
+	}
+
+	fread(&opened_database->entry_count, 1, sizeof(int), opened_database->database_data);
+	return opened_database;
+}
+
+void qkc_close_database(struct qkc_database *database_ptr) {
+	if (database_ptr == NULL) {
+		return;
+	}
+
+	if (database_ptr->database_data != NULL) {
+		fclose(database_ptr->database_data);
+	}
+
+	if (database_ptr->index_file != NULL) {
+		fclose(database_ptr->index_file);
+	}
+
+	free(database_ptr);
+	return;
+}
+
+int qkc_create_database(const char *database_name) {
+	char index_name[QKC_MAX_NAME_LEN + 7];
+	strcpy(index_name, ".index_");
+	strcat(index_name, database_name);
+	
+	FILE *new_database = fopen(database_name, "rb");
+	FILE *new_index = fopen(index_name, "rb");
+
+	int entry_count = 0;
+
+	if (new_database != NULL || new_index != NULL) {
+		return QKC_DB_EXISTS;
+	}
+
+	new_database = fopen(database_name, "wb");
+	new_index = fopen(index_name, "wb");
+	if (new_database == NULL || new_index == NULL) {
+		return QKC_DB_CREATE_FAIL;
+	}
+
+	/* Database file start and end indicators along with metadata */
+	fwrite(&QKC_DB_HEADER, 1, sizeof(int), new_database);
+	fwrite(&entry_count, 1, sizeof(int), new_database);
+	fwrite(&QKC_DB_END, 1, sizeof(int), new_database);
+
+	/* Index file start and end indicators */
+	fwrite(&QKC_INDEX_START, 1, sizeof(int), new_index);
+	fwrite(&QKC_INDEX_END, 1, sizeof(int), new_index);
+	return QKC_DB_OK;
+}
