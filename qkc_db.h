@@ -30,6 +30,12 @@ struct qkc_database {
 	FILE *database_data;
 };
 
+struct index_entry {
+	int entry_number;
+	float start_bytes;
+	float end_bytes;
+};
+
 enum QKC_DB_CODES {
 	QKC_DB_OK, QKC_DB_CREATE_FAIL, QKC_DB_EXISTS
 };

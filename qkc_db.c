@@ -26,10 +26,7 @@
 const int QKC_MAX_NAME_LEN = 255;
 
 const int QKC_DB_HEADER = 0x12905;
-const int QKC_DB_END = 0x12906;
-
 const int QKC_INDEX_START = 0x24012;
-const int QKC_INDEX_END = 0x24055;
 
 struct qkc_database *qkc_open_database(const char *database_name) {
 	struct qkc_database *opened_database = malloc(sizeof(struct qkc_database));
@@ -44,16 +41,22 @@ struct qkc_database *qkc_open_database(const char *database_name) {
 	}
 
 	opened_database->name = (char *) database_name;
-	opened_database->database_data = fopen(database_name, "rwb");
-	opened_database->index_file = fopen(index_name, "rwb");
+	opened_database->database_data = fopen(database_name, "rb+");
+	opened_database->index_file = fopen(index_name, "rb+");
 
 	if (opened_database->database_data == NULL) {
+		fprintf(stderr, "qkcache: Failed to open database file\n");
+		free(opened_database);
+		return NULL;
+	} else if (opened_database->index_file == NULL) {
+		fprintf(stderr, "qkcache: Failed to open index file associated with %s\n", database_name);
 		free(opened_database);
 		return NULL;
 	}
 
 	fread(&temp, 1, sizeof(int), opened_database->database_data);
 	if (temp != QKC_DB_HEADER) {
+		fprintf(stderr, "qkcache: Database is not in the proper format\n");
 		fclose(opened_database->database_data);
 		free(opened_database);
 		return NULL;
@@ -61,6 +64,7 @@ struct qkc_database *qkc_open_database(const char *database_name) {
 
 	fread(&temp, 1, sizeof(int), opened_database->index_file);
 	if (temp != QKC_INDEX_START) {
+		fprintf(stderr, "qkcache: Database index file is not in the proper format\n");
 		fclose(opened_database->index_file);
 		free(opened_database);
 		return NULL;
@@ -107,13 +111,13 @@ int qkc_create_database(const char *database_name) {
 		return QKC_DB_CREATE_FAIL;
 	}
 
-	/* Database file start and end indicators along with metadata */
+	/* Database file start indicator along with metadata */
 	fwrite(&QKC_DB_HEADER, 1, sizeof(int), new_database);
 	fwrite(&entry_count, 1, sizeof(int), new_database);
-	fwrite(&QKC_DB_END, 1, sizeof(int), new_database);
 
-	/* Index file start and end indicators */
 	fwrite(&QKC_INDEX_START, 1, sizeof(int), new_index);
-	fwrite(&QKC_INDEX_END, 1, sizeof(int), new_index);
+
+	rewind(new_database);
+	rewind(new_index);
 	return QKC_DB_OK;
 }
