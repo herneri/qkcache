@@ -70,7 +70,10 @@ struct qkc_database *qkc_open_database(const char *database_name) {
 		return NULL;
 	}
 
-	fread(&opened_database->entry_count, 1, sizeof(int), opened_database->database_data);
+	fread(&opened_database->entry_count, sizeof(int), 1, opened_database->database_data);
+
+	rewind(opened_database->database_data);
+	rewind(opened_database->index_file);
 	return opened_database;
 }
 
@@ -120,4 +123,14 @@ int qkc_create_database(const char *database_name) {
 	rewind(new_database);
 	rewind(new_index);
 	return QKC_DB_OK;
+}
+
+void qkc_increment_count(struct qkc_database *database_ptr) {
+	database_ptr->entry_count++;
+
+	fseek(database_ptr->database_data, sizeof(int), 1);
+	fwrite(&database_ptr->entry_count, sizeof(int), 1, database_ptr->database_data);
+
+	rewind(database_ptr->database_data);
+	return;
 }
