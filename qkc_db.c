@@ -54,7 +54,7 @@ struct qkc_database *qkc_open_database(const char *database_name) {
 		return NULL;
 	}
 
-	fread(&temp, 1, sizeof(int), opened_database->database_data);
+	fread(&temp, sizeof(int), 1, opened_database->database_data);
 	if (temp != QKC_DB_HEADER) {
 		fprintf(stderr, "qkcache: Database is not in the proper format\n");
 		fclose(opened_database->database_data);
@@ -62,7 +62,7 @@ struct qkc_database *qkc_open_database(const char *database_name) {
 		return NULL;
 	}
 
-	fread(&temp, 1, sizeof(int), opened_database->index_file);
+	fread(&temp, sizeof(int), 1, opened_database->index_file);
 	if (temp != QKC_INDEX_START) {
 		fprintf(stderr, "qkcache: Database index file is not in the proper format\n");
 		fclose(opened_database->index_file);
@@ -115,10 +115,10 @@ int qkc_create_database(const char *database_name) {
 	}
 
 	/* Database file start indicator along with metadata */
-	fwrite(&QKC_DB_HEADER, 1, sizeof(int), new_database);
-	fwrite(&entry_count, 1, sizeof(int), new_database);
+	fwrite(&QKC_DB_HEADER, sizeof(int), 1, new_database);
+	fwrite(&entry_count, sizeof(int), 1, new_database);
 
-	fwrite(&QKC_INDEX_START, 1, sizeof(int), new_index);
+	fwrite(&QKC_INDEX_START, sizeof(int), 1, new_index);
 
 	rewind(new_database);
 	rewind(new_index);
