@@ -11,6 +11,7 @@ struct index_entry *qkc_recent_index_entry(struct qkc_database *database) {
 		fprintf(stderr, "qkcache: Not enough memory to load recent index entry\n");
 		exit(2);
 	} else if (database->entry_count == 0) {
+		free(loaded_entry);
 		return NULL;
 	}
 
@@ -35,6 +36,8 @@ bool qkc_append_index_entry(struct qkc_database *database, const float data_size
 
 	fseek(database->index_file, sizeof(int), 1);
 	fseek(database->index_file, sizeof(struct index_entry), database->entry_count);
+
+	qkc_increment_count(database);
 
 	fwrite(&new_entry.entry_number, 1, sizeof(int), database->index_file);
 	fwrite(&new_entry.start_bytes, 1, sizeof(float), database->index_file);
