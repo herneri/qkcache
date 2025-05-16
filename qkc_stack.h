@@ -29,4 +29,10 @@ enum qkc_stack_error_codes {
 /* Append data to a database. */
 int qkc_stack_push(struct qkc_database *database, void *data, int data_size);
 
+/*
+	Retrieve most recent data from a database. Return data
+	is heap-allocated and subsequently must be freed after use.
+*/
+void *qkc_stack_peek(struct qkc_database *database);
+
 #endif /* QKC_STACK_H */

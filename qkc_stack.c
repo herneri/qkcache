@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 int qkc_stack_push(struct qkc_database *database, void *data, int data_size) {
 	if (data == NULL) {
@@ -35,4 +36,31 @@ int qkc_stack_push(struct qkc_database *database, void *data, int data_size) {
 	fwrite(data, 1, data_size, database->database_data);	
 	rewind(database->database_data);
 	return QKC_OP_OK;
+}
+
+void *qkc_stack_peek(struct qkc_database *database) {
+	void *retrieved_data = NULL;
+	struct index_entry *recent_entry = NULL;
+	int data_size = 0;
+
+	if (database->entry_count == 0) {
+		return NULL;
+	} else if ((recent_entry = qkc_recent_index_entry(database)) == NULL) {
+		return NULL;
+	}
+
+	data_size = recent_entry->end_bytes - recent_entry->start_bytes;
+
+	retrieved_data = malloc(data_size);
+	if (retrieved_data == NULL) {
+		return NULL;
+	}
+
+	fseek(database->database_data, 1, recent_entry->start_bytes);
+	fread(retrieved_data, 1, data_size, database->database_data);
+
+	rewind(database->database_data);
+	free(recent_entry);
+	return retrieved_data;
+
 }
