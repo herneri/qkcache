@@ -17,7 +17,7 @@
 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef QkC_DB_H
+#ifndef QKC_DB_H
 #define QKC_DB_H
 
 #include <stdio.h>
