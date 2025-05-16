@@ -1,3 +1,9 @@
+/*
+        NOTICE: This header file is intended to only be used by the qkcache engine
+        and is not meant for use by the client program. Using these functions will
+        certainly cause severe, irreversible errors if used incorrectly.
+*/
+
 #ifndef QKC_INDEX_H
 #define QKC_INDEX_H
 
