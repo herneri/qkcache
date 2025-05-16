@@ -41,6 +41,7 @@ struct qkc_database *qkc_open_database(const char *database_name) {
 	}
 
 	opened_database->name = (char *) database_name;
+	opened_database->index_name = strdup(index_name);;
 	opened_database->database_data = fopen(database_name, "rb+");
 	opened_database->index_file = fopen(index_name, "rb+");
 
@@ -90,6 +91,7 @@ void qkc_close_database(struct qkc_database *database_ptr) {
 		fclose(database_ptr->index_file);
 	}
 
+	free(database_ptr->index_name);
 	free(database_ptr);
 	return;
 }
