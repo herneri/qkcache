@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdbool.h>
+
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
 #include "qkc_db.h"
 #include "qkc_index.h"
@@ -46,4 +49,19 @@ bool qkc_append_index_entry(struct qkc_database *database, const float data_size
 	rewind(database->index_file);
 	free(recent_entry);
 	return true;
+}
+
+int qkc_pop_index_entry(struct qkc_database *database) {
+	struct stat database_metadata;
+
+	if (database->entry_count == 0) {
+		return QKC_INDEX_EMPTY_DB;
+	}
+
+	if (stat(database->index_name, &database_metadata) == -1) {
+		return QKC_INDEX_FS_FAIL;
+	}
+
+	truncate(database->index_name, database_metadata.st_size - sizeof(struct index_entry));
+	return QKC_INDEX_OK;
 }
