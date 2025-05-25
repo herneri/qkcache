@@ -33,7 +33,7 @@ int qkc_stack_push(struct qkc_database *database, void *data, int data_size) {
 	}
 
 	fseek(database->database_data, 0, SEEK_END);
-	fwrite(data, 1, data_size, database->database_data);	
+	fwrite(data, data_size, 1, database->database_data);
 	rewind(database->database_data);
 	return QKC_OP_OK;
 }
@@ -56,8 +56,8 @@ void *qkc_stack_peek(struct qkc_database *database) {
 		return NULL;
 	}
 
-	fseek(database->database_data, 1, recent_entry->start_bytes);
-	fread(retrieved_data, 1, data_size, database->database_data);
+	fseek(database->database_data, recent_entry->start_bytes - 1, SEEK_SET);
+	fread(retrieved_data, data_size, 1, database->database_data);
 
 	rewind(database->database_data);
 	free(recent_entry);
