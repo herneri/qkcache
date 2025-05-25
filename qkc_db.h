@@ -32,8 +32,8 @@ struct qkc_database {
 
 struct index_entry {
 	int entry_number;
-	float start_bytes;
-	float end_bytes;
+	int start_bytes;
+	int end_bytes;
 };
 
 enum QKC_DB_CODES {
