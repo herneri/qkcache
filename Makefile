@@ -16,4 +16,3 @@ stack_test:
 	$(CC) $(TEST_FLAGS) $(SRC) tests/stack_tests.c -o tests/stack_test
 	cd tests
 	./tests/stack_test
-	rm tests/stack.qkc tests/.index_stack.qkc
