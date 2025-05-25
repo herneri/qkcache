@@ -37,36 +37,32 @@ struct index_entry *qkc_recent_index_entry(struct qkc_database *database) {
 		return NULL;
 	}
 
-	fseek(database->index_file, sizeof(int), 1);
-	fseek(database->index_file, sizeof(struct index_entry), database->entry_count - 1);
+	fseek(database->index_file, sizeof(int), SEEK_SET);
+	fseek(database->index_file, sizeof(struct index_entry) * database->entry_count - 1, SEEK_CUR);
 
-	fread(&loaded_entry->entry_number, 1, sizeof(int), database->index_file);
-	fread(&loaded_entry->start_bytes, 1, sizeof(float), database->index_file);
-	fread(&loaded_entry->end_bytes, 1, sizeof(float), database->index_file);
+	fread(&loaded_entry->entry_number, sizeof(int), 1, database->index_file);
+	fread(&loaded_entry->start_bytes, sizeof(int), 1, database->index_file);
+	fread(&loaded_entry->end_bytes, sizeof(int), 1, database->index_file);
 
 	rewind(database->index_file);
 	return loaded_entry;
 }
 
 bool qkc_append_index_entry(struct qkc_database *database, const float data_size) {
-	struct index_entry *recent_entry = qkc_recent_index_entry(database);
 	struct index_entry new_entry;
 
 	new_entry.entry_number = database->entry_count;
-	new_entry.start_bytes = (recent_entry != NULL) ? recent_entry->end_bytes + 1 : sizeof(int);
+	new_entry.start_bytes = (database->entry_count != 0) ? sizeof(int) + sizeof(struct index_entry) * database->entry_count + 1 : sizeof(int);
 	new_entry.end_bytes = new_entry.start_bytes + data_size;
 
-	fseek(database->index_file, sizeof(int), 1);
-	fseek(database->index_file, sizeof(struct index_entry), database->entry_count);
-
+	fseek(database->index_file, 0, SEEK_END);
 	qkc_increment_count(database);
 
-	fwrite(&new_entry.entry_number, 1, sizeof(int), database->index_file);
-	fwrite(&new_entry.start_bytes, 1, sizeof(float), database->index_file);
-	fwrite(&new_entry.end_bytes, 1, sizeof(float), database->index_file);
+	fwrite(&new_entry.entry_number, sizeof(int), 1, database->index_file);
+	fwrite(&new_entry.start_bytes, sizeof(int), 1, database->index_file);
+	fwrite(&new_entry.end_bytes, sizeof(int), 1, database->index_file);
 
 	rewind(database->index_file);
-	free(recent_entry);
 	return true;
 }
 
