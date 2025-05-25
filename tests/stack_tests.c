@@ -34,6 +34,7 @@ void suite_init(void) {
 }
 
 void suite_end(void) {
+	qkc_close_database(database);
 	unlink("stack.qkc");	
 	unlink(".index_stack.qkc");	
 	return;
@@ -55,9 +56,10 @@ Test(stack_test, push_empty) {
 
 Test(stack_test, peek_one) {
 	int data = 5;
-	int result = qkc_stack_push(database, &data, sizeof(int));
+	qkc_stack_push(database, &data, sizeof(int));
 	void *retrieved_data = qkc_stack_peek(database);
 
+	cr_expect(retrieved_data != NULL, "qkc_stack_peek should return memory pointing to an integer, NULL is returned instead", *(int *)retrieved_data);
 	cr_expect(*(int *)retrieved_data == data, "qkc_stack_peek should return memory pointing to an integer with the value 5, \n%d is returned instead", *(int *)retrieved_data);
 	free(retrieved_data);
 }
