@@ -56,7 +56,7 @@ void *qkc_stack_peek(struct qkc_database *database) {
 		return NULL;
 	}
 
-	fseek(database->database_data, recent_entry->start_bytes - 1, SEEK_SET);
+	fseek(database->database_data, -data_size, SEEK_END);
 	fread(retrieved_data, data_size, 1, database->database_data);
 
 	rewind(database->database_data);
