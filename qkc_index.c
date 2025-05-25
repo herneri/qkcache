@@ -37,12 +37,8 @@ struct index_entry *qkc_recent_index_entry(struct qkc_database *database) {
 		return NULL;
 	}
 
-	fseek(database->index_file, sizeof(int), SEEK_SET);
-	fseek(database->index_file, sizeof(struct index_entry) * database->entry_count - 1, SEEK_CUR);
-
-	fread(&loaded_entry->entry_number, sizeof(int), 1, database->index_file);
-	fread(&loaded_entry->start_bytes, sizeof(int), 1, database->index_file);
-	fread(&loaded_entry->end_bytes, sizeof(int), 1, database->index_file);
+	fseek(database->index_file, -sizeof(struct index_entry), SEEK_END);
+	fread(loaded_entry, sizeof(struct index_entry), 1, database->index_file);
 
 	rewind(database->index_file);
 	return loaded_entry;
