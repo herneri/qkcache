@@ -7,6 +7,11 @@ db_test:
 	cd tests
 	./tests/db_test
 
+index_test:
+	$(CC) $(TEST_FLAGS) $(SRC) tests/index_tests.c -o tests/index_test
+	cd tests
+	./tests/index_test
+
 stack_test:
 	$(CC) $(TEST_FLAGS) $(SRC) tests/stack_tests.c -o tests/stack_test
 	cd tests
