@@ -20,10 +20,14 @@
 #include "qkc_stack.h"
 #include "qkc_db.h"
 #include "qkc_index.h"
+#include "qkc_error_codes.h"
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
+#include <unistd.h>
+#include <sys/stat.h>
 
 int qkc_stack_push(struct qkc_database *database, void *data, int data_size) {
 	if (data == NULL) {
@@ -35,6 +39,29 @@ int qkc_stack_push(struct qkc_database *database, void *data, int data_size) {
 	fseek(database->database_data, 0, SEEK_END);
 	fwrite(data, data_size, 1, database->database_data);
 	rewind(database->database_data);
+	return QKC_OP_OK;
+}
+
+int qkc_stack_pop(struct qkc_database *database) {
+	struct index_entry *retrieved_entry = NULL;
+	struct stat database_metadata;
+	int data_size = 0;
+
+	if (database->entry_count == 0) {
+		return QKC_OP_NULL;
+	} else if (stat(database->name, &database_metadata) == -1) {
+		return QKC_FS_FAIL;
+	}
+
+	retrieved_entry = qkc_recent_index_entry(database);
+	if (retrieved_entry == NULL) {
+		return QKC_NO_MEM;
+	}
+
+	data_size = retrieved_entry->end_bytes - retrieved_entry->start_bytes;
+
+	truncate(database->name, database_metadata.st_size - data_size);
+	qkc_pop_index_entry(database);
 	return QKC_OP_OK;
 }
 
@@ -62,5 +89,4 @@ void *qkc_stack_peek(struct qkc_database *database) {
 	rewind(database->database_data);
 	free(recent_entry);
 	return retrieved_data;
-
 }
