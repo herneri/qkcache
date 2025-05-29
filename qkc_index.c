@@ -74,5 +74,6 @@ int qkc_pop_index_entry(struct qkc_database *database) {
 	}
 
 	truncate(database->index_name, database_metadata.st_size - sizeof(struct index_entry));
+	qkc_decrement_count(database);
 	return QKC_INDEX_OK;
 }
