@@ -60,4 +60,7 @@ int qkc_create_database(const char *database_name);
 /* Adds one to the count of entries in the database file. */
 void qkc_increment_count(struct qkc_database *database_ptr);
 
+/* Subtract one from the count of entries in the database file. */
+void qkc_decrement_count(struct qkc_database *database_ptr);
+
 #endif /* QKC_DB_H */

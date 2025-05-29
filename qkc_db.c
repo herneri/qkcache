@@ -136,3 +136,13 @@ void qkc_increment_count(struct qkc_database *database_ptr) {
 	rewind(database_ptr->database_data);
 	return;
 }
+
+void qkc_decrement_count(struct qkc_database *database_ptr) {
+	database_ptr->entry_count--;
+
+	fseek(database_ptr->database_data, sizeof(int), SEEK_SET);
+	fwrite(&database_ptr->entry_count, sizeof(int), 1, database_ptr->database_data);
+
+	rewind(database_ptr->database_data);
+	return;
+}
